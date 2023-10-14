@@ -36,8 +36,6 @@ def extract_word_info_with_scraping(xml_file: str, word: str) -> Tuple[List[str]
         jisho_scrape = JishoScrape(word)
         readings, definitions, examples = jisho_scrape.scrape_word_info()
         
-        return readings, definitions, examples
-    
     return readings, definitions, examples
 
 def main():

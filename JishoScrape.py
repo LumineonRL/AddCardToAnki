@@ -22,8 +22,17 @@ class JishoScrape:
     def scrape_word_info(self) -> None:
         response = requests.get(self.url)
         soup = BeautifulSoup(response.content, 'html.parser')
-
-        # Scrape readings
+        
+        readings = self._scrape_readings(soup)
+        readings = self.filter_kanji(readings)
+        
+        definitions = self._scrape_definitions(soup)
+        
+        examples = self._scrape_examples(soup)
+        
+        return readings, definitions, examples
+    
+    def _scrape_readings(self, soup: BeautifulSoup) -> List[str]:
         readings = []
         reading_elements = soup.select('.concept_light-status a[href*="/search/"]')
         for element in reading_elements:
@@ -31,22 +40,20 @@ class JishoScrape:
             if 'Sentence search' in reading_text:
                 reading_text = reading_text.replace('Sentence search for ', '')
                 readings.append(reading_text)
-
-        # Filter out readings with kanji characters
-        readings = self.filter_kanji(readings)
-
-        # Scrape definitions
+        return readings
+    
+    def _scrape_definitions(self, soup: BeautifulSoup) -> List[str]:
         definitions = []
         definition_elements = soup.select('.meanings-wrapper .meaning-meaning')
         for element in definition_elements:
             definitions.append(element.text.strip())
-
-        # Scrape examples using regex
+        return definitions
+    
+    def _scrape_examples(self, soup: BeautifulSoup) -> List[str]:
         examples = []
         example_elements = soup.select('.sentence > .clearfix.japanese_gothic.japanese')
         for element in example_elements:
             example_text = element.text.strip()
             example_text = re.sub(r'[\n\s]+', ' ', example_text)  # Remove extra spaces and newlines
             examples.append(example_text)
-
-        return readings, definitions, examples
+        return examples
